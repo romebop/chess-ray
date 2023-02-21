@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "chess-ray",
+  "version": "1.0",
+  "description": "visualize moves on chess.com",
+  "content_scripts": [
+    {
+      "js": [
+        "scripts/content.js"
+      ],
+      "matches": [
+        "https://www.chess.com/game/*",
+        "https://www.chess.com/play/*"
+      ]
+    }
+  ]
+}
