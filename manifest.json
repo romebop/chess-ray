@@ -6,11 +6,22 @@
   "content_scripts": [
     {
       "js": [
+        "scripts/util.js",
         "scripts/content.js"
       ],
       "matches": [
-        "https://www.chess.com/game/*",
-        "https://www.chess.com/play/*"
+        "https://www.chess.com/*"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/attack.svg",
+        "assets/defend.svg"
+      ],
+      "matches": [
+        "https://www.chess.com/*"
       ]
     }
   ]

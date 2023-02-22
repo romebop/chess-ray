@@ -31,13 +31,7 @@ function getOpponentColor() {
  *
  * piece
  *
- * [color(b|w)][name]
- * k = king
- * q = queen
- * r = rook
- * b = bishop
- * n = knight
- * p = pawn
+ * [color(w|b)][name(k|q|r|b|n|p)]
  * 
  * square-[column(1-8)][row(1-8)] 
  */
@@ -97,7 +91,8 @@ function getIndices(rowStr, colStr, bottomColor) {
 }
 
 function getThreatBoard(board, color, bottomColor) {
-  const threatBoard = getEmptyBoard(false);
+  // cell values: null, 'threat', 'attack', 'defend'
+  const threatBoard = getEmptyBoard(null);
   
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[0].length; x++) {
@@ -106,8 +101,17 @@ function getThreatBoard(board, color, bottomColor) {
       
       const threatSquares = getThreatSquares(board, color, bottomColor, { x, y });
       for (const s of threatSquares) {
-        threatBoard[s.y][s.x] = true;
+        threatBoard[s.y][s.x] = 'threat';
       }
+    }
+  }
+
+  for (let y = 0; y < threatBoard.length; y++) {
+    for (let x = 0; x < threatBoard[0].length; x++) {
+      if (!threatBoard[y][x] || !board[y][x]) continue;
+      const piece = board[y][x];
+
+      threatBoard[y][x] = piece.color === color ? 'defend' : 'attack';
     }
   }
 
@@ -118,7 +122,7 @@ function getThreatSquares(board, color, bottomColor, { x, y }) {
   const threatSquares = [];
   const pieceName = board[y][x].name;   
 
-  if (pieceName === 'k') {
+  if (pieceName === 'k') { // king
     const moveSquares = [
       { x       , y: y - 1 },
       { x: x + 1, y: y - 1 },
@@ -129,12 +133,13 @@ function getThreatSquares(board, color, bottomColor, { x, y }) {
       { x: x - 1, y        },
       { x: x - 1, y: y - 1 },
     ];
-    moveSquares.filter(s => canThreaten(board, color, s)).forEach(s => {
-      threatSquares.push(s);
-    });
+    moveSquares.filter(square => isInBounds(board, square))
+      .forEach(square => {
+        threatSquares.push(square);
+      });
   }
 
-  if (pieceName === 'q') {
+  if (pieceName === 'q') { // queen
     const squareUpdaters = [
       ({ x, y }) => ({ x       , y: y - 1 }),
       ({ x, y }) => ({ x: x + 1, y: y - 1 }),
@@ -146,16 +151,16 @@ function getThreatSquares(board, color, bottomColor, { x, y }) {
       ({ x, y }) => ({ x: x - 1, y: y - 1 }),
     ];
     for (const updater of squareUpdaters) {
-      let pos = updater({ x, y });
-      while (canThreaten(board, color, pos)) {
-        threatSquares.push(pos);
-        if (board[pos.y][pos.x]) break;
-        pos = updater(pos);
+      let square = updater({ x, y });
+      while (isInBounds(board, square)) {
+        threatSquares.push(square);
+        if (board[square.y][square.x]) break;
+        square = updater(square);
       }
     }
   }
 
-  if (pieceName === 'r') {
+  if (pieceName === 'r') { // rook
     const squareUpdaters = [
       ({ x, y }) => ({ x       , y: y - 1 }),
       ({ x, y }) => ({ x: x + 1, y        }),
@@ -163,16 +168,16 @@ function getThreatSquares(board, color, bottomColor, { x, y }) {
       ({ x, y }) => ({ x: x - 1, y        }),
     ];
     for (const updater of squareUpdaters) {
-      let pos = updater({ x, y });
-      while (canThreaten(board, color, pos)) {
-        threatSquares.push(pos);
-        if (board[pos.y][pos.x]) break;
-        pos = updater(pos);
+      let square = updater({ x, y });
+      while (isInBounds(board, square)) {
+        threatSquares.push(square);
+        if (board[square.y][square.x]) break;
+        square = updater(square);
       }
     }
   }
   
-  if (pieceName === 'b') {
+  if (pieceName === 'b') { // bishop
     const squareUpdaters = [
       ({ x, y }) => ({ x: x + 1, y: y - 1 }),
       ({ x, y }) => ({ x: x + 1, y: y + 1 }),
@@ -180,16 +185,16 @@ function getThreatSquares(board, color, bottomColor, { x, y }) {
       ({ x, y }) => ({ x: x - 1, y: y - 1 }),
     ];
     for (const updater of squareUpdaters) {
-      let pos = updater({ x, y });
-      while (canThreaten(board, color, pos)) {
-        threatSquares.push(pos);
-        if (board[pos.y][pos.x]) break;
-        pos = updater(pos);
+      let square = updater({ x, y });
+      while (isInBounds(board, square)) {
+        threatSquares.push(square);
+        if (board[square.y][square.x]) break;
+        square = updater(square);
       }
     }
   }
 
-  if (pieceName === 'n') {
+  if (pieceName === 'n') { // knight
     const moveSquares = [
       { x: x + 1, y: y - 2 },
       { x: x + 2, y: y - 1 },
@@ -200,26 +205,23 @@ function getThreatSquares(board, color, bottomColor, { x, y }) {
       { x: x - 2, y: y - 1 },
       { x: x - 1, y: y - 2 },
     ];
-    moveSquares.filter(s => canThreaten(board, color, s)).forEach(s => {
-      threatSquares.push(s);
-    });
+    moveSquares.filter(square => isInBounds(board, square))
+      .forEach(square => {
+        threatSquares.push(square);
+      });
   }
   
-  if (pieceName === 'p') {
+  if (pieceName === 'p') { // pawn
     const moveSquares = color === bottomColor
       ? [{ x: x - 1, y: y - 1 }, { x: x + 1, y: y - 1 }]
       : [{ x: x - 1, y: y + 1 }, { x: x + 1, y: y + 1 }];
-    moveSquares.filter(s => canThreaten(board, color, s)).forEach(s => {
-      threatSquares.push(s);
-    });
+    moveSquares.filter(square => isInBounds(board, square))
+      .forEach(square => {
+        threatSquares.push(square);
+      });
   }
 
   return threatSquares;
-}
-
-function canThreaten(board, color, { x, y }) {
-  if (!isInBounds(board, { x, y })) return false;
-  return board[y][x] === null || board[y][x].color !== color;
 }
 
 function isInBounds(board, { x, y }) {
@@ -238,6 +240,7 @@ function addMarkers(boardNode, color, threatBoard) {
   for (let y = 0; y < threatBoard.length; y++) {
     for (let x = 0; x < threatBoard[0].length; x++) {
       if (!threatBoard[y][x]) continue;
+      
       const markerNode = document.createElement('div');
       markerNode.classList.add(getMarkerClassName(color));
       markerNode.style.cssText += `
@@ -247,9 +250,25 @@ function addMarkers(boardNode, color, threatBoard) {
         top: 0;
         left: 0;
         background-color: ${color === userColor ? '#5f67fa' : '#de535e'};
-        opacity: 1;
+        opacity: 0.9;
         transform: translate(${100 * x}%, ${100 * y}%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: blue;
       `;
+      
+      if (threatBoard[y][x] !== 'threat') {
+        const imgNode = document.createElement('img');
+        imgNode.src = threatBoard[y][x] === 'attack'
+          ? chrome.runtime.getURL('../assets/attack.svg')
+          : chrome.runtime.getURL('../assets/defend.svg');
+        imgNode.style.cssText += `
+          height: ${markerLength / 5}px;
+        `;
+        markerNode.appendChild(imgNode);
+      }
+      
       boardNode.appendChild(markerNode);
     }
   }
@@ -257,42 +276,4 @@ function addMarkers(boardNode, color, threatBoard) {
 
 function getMarkerClassName(color) {
   return `${color}-threat-marker`;
-}
-
-// debug
-
-function getBoardStr(board) {
-  const pieceSymbolMap = {
-    w: {
-      k: '♔',
-      q: '♕',
-      r: '♖',
-      b: '♗',
-      n: '♘',
-      p: '♙',
-    },
-    b: {
-      k: '♚',
-      q: '♛',
-      r: '♜',
-      b: '♝',
-      n: '♞',
-      p: '♟︎',
-    },
-  };
-  return board.reduce((accBoard, row) => {
-    const rowStr = row.reduce((accRow, piece) => (
-      `${accRow} ${piece ? pieceSymbolMap[piece.color][piece.name] : '.'}`
-    ), '');
-    return accBoard + `${rowStr}\n`
-  }, '');
-}
-
-function getThreatBoardStr(board) {
-  return board.reduce((accBoard, row) => {
-    const rowStr = row.reduce((accRow, threat) => (
-      `${accRow} ${threat ? 'o' : '.'}`
-    ), '');
-    return accBoard + `${rowStr}\n`
-  }, '');
 }
