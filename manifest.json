@@ -2,15 +2,18 @@
   "manifest_version": 3,
   "name": "chess-ray",
   "version": "1.0",
-  "description": "visualize moves on chess.com",
+  "description": "visualize piece threats on chess.com",
   "content_scripts": [
     {
       "js": [
         "scripts/util.js",
         "scripts/content.js"
       ],
+      "css": [
+        "scripts/content.css"
+      ],
       "matches": [
-        "https://www.chess.com/*"
+        "*://www.chess.com/*"
       ]
     }
   ],
@@ -21,8 +24,15 @@
         "assets/defend.svg"
       ],
       "matches": [
-        "https://www.chess.com/*"
+        "*://www.chess.com/*"
       ]
     }
-  ]
+  ],
+  "permissions": [
+    "storage"
+  ],
+  "options_ui": {
+    "page": "options/index.html",
+    "open_in_tab": false
+  }
 }

@@ -1,3 +1,9 @@
+function haveSameItems(a, b) {
+  return Array.isArray(a) && Array.isArray(b)
+    && a.length === b.length
+    && a.every(item => b.includes(item));
+}
+
 // debug
 
 function getBoardStr(board) {

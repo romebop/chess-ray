@@ -3,20 +3,47 @@ const toggleStates = {
   b: false,
 };
 
+let opponentHotkey;
+let userHotkey;
+chrome.storage.sync.get({
+  opponentHotkey: ['Meta', 'Shift', 'o'],
+  userHotkey: ['Meta', 'Shift', 'k'],
+}).then(items => {
+  opponentHotkey = items.opponentHotkey;
+  userHotkey = items.userHotkey;
+});
+
+const pressedKeys = [];
+
 document.addEventListener('keydown', e => {
-  if (e.metaKey && e.shiftKey && e.key === 'o') {
+  if (pressedKeys.includes(e.key)) return;
+  pressedKeys.push(e.key);
+
+  if (haveSameItems(opponentHotkey, pressedKeys)) {
     const color = getOpponentColor();
     if (toggleBoard(color, toggleStates[color])) {
       toggleStates[color] = !toggleStates[color];
     }
   }
-  if (e.metaKey && e.shiftKey && e.key === 'k') {
+  
+  if (haveSameItems(userHotkey, pressedKeys)) {
     const color = getUserColor();
     if (toggleBoard(color, toggleStates[color])) {
       toggleStates[color] = !toggleStates[color];
     }
   }
 });
+
+document.addEventListener('keyup', e => {
+  console.log(`keyup for ${e.key} triggered`);
+  const idx = pressedKeys.findIndex(k => k === e.key);
+  if (idx < 0) return;
+  pressedKeys.splice(idx, 1);
+});
+
+setInterval(() => {
+  console.log(pressedKeys);
+}, 2000);
 
 function getUserColor() {
   return document.querySelector('.coordinates').firstElementChild.textContent === '8' ? 'w' : 'b';
@@ -242,20 +269,13 @@ function addMarkers(boardNode, color, threatBoard) {
       if (!threatBoard[y][x]) continue;
       
       const markerNode = document.createElement('div');
+      markerNode.classList.add('threat-marker');
       markerNode.classList.add(getMarkerClassName(color));
       markerNode.style.cssText += `
         width: ${markerLength}px;
         height: ${markerLength}px;
-        position: absolute;
-        top: 0;
-        left: 0;
         background-color: ${color === userColor ? '#5f67fa' : '#de535e'};
-        opacity: 0.9;
         transform: translate(${100 * x}%, ${100 * y}%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: blue;
       `;
       
       if (threatBoard[y][x] !== 'threat') {

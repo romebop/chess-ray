@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+  padding: 10px 20px 30px 20px;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+}
+
+.line:not(:first-child) {
+  margin-top: 8px;
+}
+
+.label {
+  width: 160px;
+}
+
+.checkmark {
+  opacity: 0;
+  margin-left: 6px;
+  font-weight: 500;
+  transition: opacity 400ms ease;
+}
+
+.checkmark.show {
+  opacity: 1;
+  transition: opacity 0ms;
+}
