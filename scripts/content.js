@@ -3,6 +3,7 @@ const toggleStates = {
   b: false,
 };
 
+const modifiers = ['Meta', 'Alt', 'Control', 'Shift'];
 let opponentHotkey;
 let userHotkey;
 chrome.storage.sync.get({
@@ -13,20 +14,17 @@ chrome.storage.sync.get({
   userHotkey = items.userHotkey;
 });
 
-const pressedKeys = [];
-
 document.addEventListener('keydown', e => {
-  if (pressedKeys.includes(e.key)) return;
-  pressedKeys.push(e.key);
+  if (modifiers.includes(e.key)) return;
 
-  if (opponentHotkey.every(k => pressedKeys.includes(k))) {
+  if (isHotkeyPressed(e, 'opponent')) {
     const color = getOpponentColor();
     if (toggleBoard(color, toggleStates[color])) {
       toggleStates[color] = !toggleStates[color];
     }
   }
   
-  if (userHotkey.every(k => pressedKeys.includes(k))) {
+  if (isHotkeyPressed(e, 'user')) {
     const color = getUserColor();
     if (toggleBoard(color, toggleStates[color])) {
       toggleStates[color] = !toggleStates[color];
@@ -34,16 +32,14 @@ document.addEventListener('keydown', e => {
   }
 });
 
-document.addEventListener('keyup', e => {
-  console.log(`keyup for ${e.key} triggered`);
-  const idx = pressedKeys.findIndex(k => k === e.key);
-  if (idx < 0) return;
-  pressedKeys.splice(idx, 1);
-});
-
-setInterval(() => {
-  console.log(pressedKeys);
-}, 2000);
+function isHotkeyPressed(e, target) {
+  const hotkey = target === 'opponent' ? opponentHotkey : userHotkey;
+  return (hotkey.includes('Meta') ? e.metaKey : true)
+    && (hotkey.includes('Alt') ? e.altKey : true)
+    && (hotkey.includes('Control') ? e.ctrlKey : true)
+    && (hotkey.includes('Shift') ? e.shiftKey : true) 
+    && hotkey.includes(e.key);
+}
 
 function getUserColor() {
   return document.querySelector('.coordinates').firstElementChild.textContent === '8' ? 'w' : 'b';
