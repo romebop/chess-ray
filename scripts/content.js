@@ -19,14 +19,14 @@ document.addEventListener('keydown', e => {
   if (pressedKeys.includes(e.key)) return;
   pressedKeys.push(e.key);
 
-  if (haveSameItems(opponentHotkey, pressedKeys)) {
+  if (opponentHotkey.every(k => pressedKeys.includes(k))) {
     const color = getOpponentColor();
     if (toggleBoard(color, toggleStates[color])) {
       toggleStates[color] = !toggleStates[color];
     }
   }
   
-  if (haveSameItems(userHotkey, pressedKeys)) {
+  if (userHotkey.every(k => pressedKeys.includes(k))) {
     const color = getUserColor();
     if (toggleBoard(color, toggleStates[color])) {
       toggleStates[color] = !toggleStates[color];
