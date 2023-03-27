@@ -263,6 +263,8 @@ function removeMarkers(boardNode, color) {
 function addMarkers(boardNode, color, threatBoard) {
   const markerLength = boardNode.querySelector('.piece').getBoundingClientRect().width;
   const userColor = getUserColor();
+  const userColorHex = '#0095ff';
+  const opponentColorHex = '#ec1313';
 
   for (let y = 0; y < threatBoard.length; y++) {
     for (let x = 0; x < threatBoard[0].length; x++) {
@@ -274,19 +276,53 @@ function addMarkers(boardNode, color, threatBoard) {
       markerNode.style.cssText += `
         width: ${markerLength}px;
         height: ${markerLength}px;
-        background-color: ${color === userColor ? '#5f67fa' : '#de535e'};
         transform: translate(${100 * x}%, ${100 * y}%);
       `;
-      
+
+      const filterNode = document.createElement('div');
+      filterNode.classList.add('filter');
+      filterNode.style.cssText += `
+        width: ${markerLength}px;
+        height: ${markerLength}px;
+      `;
+      markerNode.appendChild(filterNode);
+
+      const backgroundNode = document.createElement('div');
+      backgroundNode.classList.add('background');
+      backgroundNode.style.cssText += `
+        background-color: ${color === userColor ? userColorHex : opponentColorHex};
+      `;
+      markerNode.appendChild(backgroundNode);
+
+      const glitchBorderContainerNode = document.createElement('div');
+      glitchBorderContainerNode.classList.add('glitch-border-container');
+      markerNode.appendChild(glitchBorderContainerNode);
+
+      const glitchContainerNode = document.createElement('div');
+      glitchContainerNode.classList.add('glitch-container');
+      glitchContainerNode.style.cssText += `
+        background-color: ${color === userColor ? userColorHex : opponentColorHex};
+      `;
+      glitchBorderContainerNode.appendChild(glitchContainerNode);
+
       if (threatBoard[y][x] !== 'threat') {
         const imgNode = document.createElement('img');
+        const glitchImgNode = document.createElement('img');
+        glitchImgNode.classList.add('glitch-image');
         imgNode.src = threatBoard[y][x] === 'attack'
+          ? chrome.runtime.getURL('../assets/attack.svg')
+          : chrome.runtime.getURL('../assets/defend.svg');
+        glitchImgNode.src = threatBoard[y][x] === 'attack'
           ? chrome.runtime.getURL('../assets/attack.svg')
           : chrome.runtime.getURL('../assets/defend.svg');
         imgNode.style.cssText += `
           height: ${markerLength / 5}px;
         `;
-        markerNode.appendChild(imgNode);
+        glitchImgNode.style.cssText += `
+          height: ${markerLength / 5}px;
+        `;
+        backgroundNode.appendChild(imgNode);
+        glitchContainerNode.appendChild(glitchImgNode);
       }
       
       boardNode.appendChild(markerNode);

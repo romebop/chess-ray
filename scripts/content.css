@@ -1,9 +1,219 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --accent-color: #ff0;
+  --text-color: #fff;
+  --text-shadow-color: #ccc;
+  --font-size: 26px;
+  --cutout-side-length: 20px;
+  --clip-path: polygon(0 0, calc(100% + var(--border-width)) 0, calc(100% + var(--border-width)) 100%, var(--cutout-side-length) 100%, 0 calc(100% - var(--cutout-side-length)));
+  --border-width: 4px;
+  --shimmy-distance: 5;
+  --clip-path-one: polygon(0 2%, 100% 2%, 100% 95%, 95% 95%, 8% 95%, 0 70%);
+  --clip-path-two: polygon(0 78%, 100% 78%, 100% 100%, 8% 100%, 0 78%);
+  --clip-path-three: polygon(0 44%, 100% 44%, 100% 54%, 95% 54%, 95% 54%, 85% 54%, 85% 54%, 8% 54%, 0 54%);
+  --clip-path-four: polygon(0 0, 100% 0, 100% 0, 95% 0, 95% 0, 85% 0, 85% 0, 8% 0, 0 0);
+  --clip-path-five: polygon(0 0, 100% 0, 100% 0, 95% 0, 95% 0, 85% 0, 85% 0, 8% 0, 0 0);
+  --clip-path-six: polygon(0 40%, 100% 40%, 100% 85%, 95% 85%, 95% 85%, 85% 85%, 85% 85%, 8% 85%, 0 70%);
+  --clip-path-seven: polygon(0 63%, 100% 63%, 100% 80%, 95% 80%, 95% 80%, 85% 80%, 85% 80%, 8% 80%, 0 70%);
+  --flicker-opacity-max: 0.3;
+  --flicker-opacity-min: 0.1;
+}
+
 .threat-marker {
   position: absolute;
   top: 0;
   left: 0;
-  opacity: 0.9;
+  opacity: 0.75;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  color: var(--text-color);
+  text-transform: uppercase;
+  font-size: var(--font-size);
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.threat-marker::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--accent-color);
+  width: calc(3 * var(--border-width));
+  height: calc(3 * var(--border-width));
+}
+
+.filter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  clip-path: var(--clip-path);
+  background-image:
+    linear-gradient(to top, rgba(255, 255, 255, .2) 33.33333%, rgba(255, 255, 255, .4) 33.33333%, rgba(255, 255, 255, .4) 66.66666%, rgba(255, 255, 255, .6) 66.66666%),
+    linear-gradient(to right, rgba(255, 0, 0, .7) 33.33333%, rgba(0, 255, 0, .7) 33.33333%, rgba(0, 255, 0, .7) 66.66666%, rgba(0, 0, 255, .7) 66.66666%);
+  background-size: 3px 3px;
+  opacity: 0.2;
+  animation: flicker 16s infinite;
+}
+
+.background {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  clip-path: var(--clip-path);
+}
+
+.glitch-border-container {
+  height: calc(100% + (2 * var(--border-width)));
+  width: calc(100% + (2 * var(--border-width)));
+  position: absolute;
+  top: calc(var(--border-width) * -1);
+  right: calc(var(--border-width) * -1);
+  bottom: calc(var(--border-width) * -1);
+  left: calc(var(--border-width) * -1);
+  background-color: var(--accent-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  clip-path: var(--clip-path);
+  animation: glitch 2s infinite;
+  display: none;
+}
+
+.threat-marker:hover .glitch-border-container {
+  display: flex;
+}
+
+.glitch-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: calc(100% - (2 * var(--border-width)));
+  height: calc(100% - (2 * var(--border-width)));
+  text-shadow: 2px 1px var(--accent-color), -1px -2px var(--text-shadow-color);
+  clip-path: var(--clip-path);
+}
+
+.glitch-image {
+  filter:
+    drop-shadow(2px 1px var(--accent-color))
+    drop-shadow(-1px -2px var(--text-shadow-color));
+}
+
+@keyframes glitch {
+  0% {
+    clip-path: var(--clip-path-one);
+  }
+
+  2%,
+  8% {
+    clip-path: var(--clip-path-two);
+    transform: translate(calc(var(--shimmy-distance) * -1%), 0);
+  }
+
+  6% {
+    clip-path: var(--clip-path-two);
+    transform: translate(calc(var(--shimmy-distance) * 1%), 0);
+  }
+
+  9% {
+    clip-path: var(--clip-path-two);
+    transform: translate(0, 0);
+  }
+
+  10% {
+    clip-path: var(--clip-path-three);
+    transform: translate(calc(var(--shimmy-distance) * 1%), 0);
+  }
+
+  13% {
+    clip-path: var(--clip-path-three);
+    transform: translate(0, 0);
+  }
+
+  14%,
+  21% {
+    clip-path: var(--clip-path-four);
+    transform: translate(calc(var(--shimmy-distance) * 1%), 0);
+  }
+
+  25% {
+    clip-path: var(--clip-path-five);
+    transform: translate(calc(var(--shimmy-distance) * 1%), 0);
+  }
+
+  30% {
+    clip-path: var(--clip-path-five);
+    transform: translate(calc(var(--shimmy-distance) * -1%), 0);
+  }
+
+  35%,
+  45% {
+    clip-path: var(--clip-path-six);
+    transform: translate(calc(var(--shimmy-distance) * -1%));
+  }
+
+  40% {
+    clip-path: var(--clip-path-six);
+    transform: translate(calc(var(--shimmy-distance) * 1%));
+  }
+
+  50% {
+    clip-path: var(--clip-path-six);
+    transform: translate(0, 0);
+  }
+
+  55% {
+    clip-path: var(--clip-path-seven);
+    transform: translate(calc(var(--shimmy-distance) * 1%), 0);
+  }
+
+  60% {
+    clip-path: var(--clip-path-seven);
+    transform: translate(0, 0);
+  }
+
+  31%,
+  61%,
+  100% {
+    clip-path: var(--clip-path-four);
+  }
+}
+
+@keyframes flicker {
+
+  0%,
+  22%,
+  31%,
+  44%,
+  55%,
+  65%,
+  77%,
+  83%,
+  95% {
+    opacity: var(--flicker-opacity-max);
+  }
+
+  4%,
+  28%,
+  37%,
+  49%,
+  60%,
+  73%,
+  79%,
+  89%,
+  100% {
+    opacity: var(--flicker-opacity-min);
+  }
 }
